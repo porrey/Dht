@@ -150,7 +150,7 @@
                     BorderBrush="{StaticResource BorderColor}"
                     BorderThickness="{StaticResource BorderThickness}"
                     Margin="{StaticResource BorderMargin}">
-                <TextBlock Text="Success Rate"
+                <TextBlock Text="Rate"
                            FontSize="{StaticResource DashboardFontSize}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center"

@@ -1,6 +1,9 @@
 ﻿#include "pch.h"
 #include "Dht11.h"
+#include <ppltasks.h>
 
+using namespace concurrency;
+using namespace std;
 using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
@@ -10,25 +13,56 @@ using namespace Sensors::Dht;
 
 _Use_decl_annotations_
 
-void Dht11::Init(GpioPin^ Pin)
+Dht11::Dht11(Windows::Devices::Gpio::GpioPin^ pin, Windows::Devices::Gpio::GpioPinDriveMode inputReadMode)
 {
 	// ***
 	// *** Set Drive Mode to Input
 	// ***
-	Pin->SetDriveMode(GpioPinDriveMode::InputPullUp);
+	this->_inputReadMode = inputReadMode;
+	pin->SetDriveMode(this->_inputReadMode);
 
 	// ***
 	// *** Save the Pin
 	// ***
-	this->_pin = Pin;
+	this->_pin = pin;
 }
 
-void Dht11::GetReading()
+Dht11::~Dht11()
 {
-	// ***
-	// *** Clear previous values
-	// ***
-	this->Reset();
+	this->_pin = nullptr;
+}
+
+Windows::Foundation::IAsyncOperation<DhtReading>^ Dht11::GetReading()
+{
+	return this->GetReading(DEFAULT_MAX_RETRIES);
+}
+
+Windows::Foundation::IAsyncOperation<DhtReading>^ Dht11::GetReading(int maxRetries)
+{
+	return create_async([this, maxRetries]
+	{
+		DhtReading returnValue;
+		int i = 0;
+
+		for (i; i < maxRetries; i++)
+		{
+			returnValue = this->InternalGetReading();
+
+			if (returnValue.IsValid)
+			{
+				break;
+			}
+		}
+
+		returnValue.RetryCount = i;
+
+		return returnValue;
+	});
+}
+
+DhtReading Dht11::InternalGetReading()
+{
+	DhtReading returnValue;
 
 	// ***
 	// *** Create a buffer for the 40-bit reading
@@ -68,8 +102,11 @@ void Dht11::GetReading()
 	// ***
 	// *** Set pin back to input
 	// ***
-	this->_pin->SetDriveMode(GpioPinDriveMode::InputPullUp);
+	this->_pin->SetDriveMode(this->_inputReadMode);
 
+	// ***
+	// *** Read the current value
+	// ***
 	GpioPinValue previousValue = this->_pin->Read();
 
 	// ***
@@ -77,20 +114,21 @@ void Dht11::GetReading()
 	// ***
 	const ULONG initialRisingEdgeTimeoutMillis = 1;
 	ULONGLONG endTickCount = GetTickCount64() + initialRisingEdgeTimeoutMillis;
-	for (;;) 
+	for (;;)
 	{
-		if (GetTickCount64() > endTickCount) 
+		if (GetTickCount64() > endTickCount)
 		{
-			return;
+			returnValue.TimedOut = true;
+			return returnValue;
 		}
 
 		GpioPinValue value = this->_pin->Read();
-		if (value != previousValue) 
+		if (value != previousValue)
 		{
 			// ***
 			// *** Rising edge?
 			// ***
-			if (value == GpioPinValue::High) 
+			if (value == GpioPinValue::High)
 			{
 				break;
 			}
@@ -108,15 +146,16 @@ void Dht11::GetReading()
 	// *** Capture every falling edge until all bits are received or
 	// *** timeout occurs
 	// ***
-	for (unsigned int i = 0; i < (bits.size() + 1);) 
+	for (unsigned int i = 0; i < (bits.size() + 1);)
 	{
-		if (GetTickCount64() > endTickCount) 
+		if (GetTickCount64() > endTickCount)
 		{
-			return;
+			returnValue.TimedOut = true;
+			return returnValue;
 		}
 
 		GpioPinValue value = this->_pin->Read();
-		if ((previousValue == GpioPinValue::High) && (value == GpioPinValue::Low)) 
+		if ((previousValue == GpioPinValue::High) && (value == GpioPinValue::Low))
 		{
 			// ***
 			// *** A falling edge was detected
@@ -137,11 +176,15 @@ void Dht11::GetReading()
 		previousValue = value;
 	}
 
-	this->CalculateValues(bits);
+	returnValue = this->CalculateValues(bits);
+
+	return returnValue;
 }
 
-void Dht11::CalculateValues(std::bitset<40> bits)
+DhtReading Dht11::CalculateValues(std::bitset<40> bits)
 {
+	DhtReading returnValue;
+
 	unsigned long long value = bits.to_ullong();
 
 	unsigned int checksum =
@@ -150,27 +193,21 @@ void Dht11::CalculateValues(std::bitset<40> bits)
 		((value >> 16) & 0xff) +
 		((value >> 8) & 0xff);
 
-	this->_isValid = (checksum & 0xff) == (value & 0xff);
+	returnValue.IsValid = (checksum & 0xff) == (value & 0xff);
 
-	if (this->IsValid)
+	if (returnValue.IsValid)
 	{
 		unsigned long long value1 = bits.to_ullong();
-		this->_humidity = ((value1 >> 32) & 0xff) + ((value1 >> 24) & 0xff) / 10.0;
+		returnValue.Humidity = ((value1 >> 32) & 0xff) + ((value1 >> 24) & 0xff) / 10.0;
 
 		unsigned long long value2 = bits.to_ullong();
-		this->_temperature = ((value2 >> 16) & 0xff) + ((value2 >> 8) & 0xff) / 10.0;
+		returnValue.Temperature = ((value2 >> 16) & 0xff) + ((value2 >> 8) & 0xff) / 10.0;
 	}
 	else
 	{
-		this->_humidity = 0;
-		this->_temperature = 0;
+		returnValue.Humidity = 0;
+		returnValue.Temperature = 0;
 	}
-}
 
-void Dht11::Reset()
-{
-	this->_humidity = 0;
-	this->_temperature = 0;
-	this->_isValid = false;
-	this->_timedOut = false;
+	return returnValue;
 }

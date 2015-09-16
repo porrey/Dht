@@ -14,7 +14,7 @@ namespace Sensors.OneWire
 	{
 		private DispatcherTimer _timer = new DispatcherTimer();
 		GpioPin _pin = null;
-		private Dht11 _dht11 = null;
+		private IDht _dht11 = null;
 		private List<int> _retryCount = new List<int>();
 		private DateTimeOffset _startedAt = DateTime.MinValue;
 
@@ -31,8 +31,7 @@ namespace Sensors.OneWire
 			base.OnNavigatedTo(e);
 
 			_pin = GpioController.GetDefault().OpenPin(4, GpioSharingMode.Exclusive);
-			_dht11 = new Dht11();
-			_dht11.Init(_pin);
+			_dht11 = new Dht11(_pin, GpioPinDriveMode.InputPullUp);
 
 			_timer.Start();
 
@@ -45,6 +44,7 @@ namespace Sensors.OneWire
 
 			_pin.Dispose();
 			_pin = null;
+
 			_dht11 = null;
 
 			base.OnNavigatedFrom(e);
@@ -52,33 +52,27 @@ namespace Sensors.OneWire
 
 		private async void _timer_Tick(object sender, object e)
 		{
+			DhtReading reading = new DhtReading();
 			int val = this.TotalAttempts;
 			this.TotalAttempts++;
 
-			int i = 0;
-			for (i = 0; i < 20; i++)
-			{
-				_dht11.GetReading();
+			reading = await _dht11.GetReading().AsTask();
 
-				this.OnPropertyChanged(nameof(TotalAttempts));
-				this.OnPropertyChanged(nameof(PercentSuccess));
-
-				if (_dht11.IsValid) break;
-			}
-
-			_retryCount.Add(i);
+			_retryCount.Add(reading.RetryCount);
 			this.OnPropertyChanged(nameof(AverageRetriesDisplay));
+			this.OnPropertyChanged(nameof(TotalAttempts));
+			this.OnPropertyChanged(nameof(PercentSuccess));
 
-			if (_dht11.IsValid)
+			if (reading.IsValid)
 			{
-				await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-				{
+				//await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+				//{
 					this.TotalSuccess++;
-					this.Temperature = Convert.ToSingle(_dht11.Temperature);
-					this.Humidity = Convert.ToSingle(_dht11.Humidity);
+					this.Temperature = Convert.ToSingle(reading.Temperature);
+					this.Humidity = Convert.ToSingle(reading.Humidity);
 					this.LastUpdated = DateTimeOffset.Now;
 					this.OnPropertyChanged(nameof(SuccessRate));
-				});
+				//});
 			}
 
 			this.OnPropertyChanged(nameof(LastUpdatedDisplay));
@@ -90,7 +84,7 @@ namespace Sensors.OneWire
 			{
 				string returnValue = string.Empty;
 
-				int attempts = this.TotalAttempts;// * this.AverageRetries;
+				int attempts = this.TotalAttempts;
 
 				if (attempts > 0)
 				{

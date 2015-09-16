@@ -1,69 +1,42 @@
 ﻿#pragma once
 
+#define SAMPLE_HOLD_LOW_MILLIS 18
+#define DEFAULT_MAX_RETRIES 20
+
 namespace Sensors
 {
 	namespace Dht
 	{
-		public ref class Dht11 sealed
+		public value struct DhtReading
 		{
-			enum
-			{
-				SAMPLE_HOLD_LOW_MILLIS = 18
-			};
+			bool TimedOut;
+			bool IsValid;
+			double Temperature;
+			double Humidity;
+			int RetryCount;
+		};
 
+		public interface class IDht
+		{
+			Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading();
+			Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading(int maxRetries);
+		};
+
+		public ref class Dht11 sealed : IDht
+		{
 			public:
+				Dht11(Windows::Devices::Gpio::GpioPin^ pin, Windows::Devices::Gpio::GpioPinDriveMode inputReadMode);
+				virtual ~Dht11();
 
-			Dht11() :
-				_pin(nullptr)
-			{ }
-
-			void Init(Windows::Devices::Gpio::GpioPin^ Pin);
-
-			void GetReading();
-
-			void Reset();
-
-			property bool IsValid
-			{
-				bool get()
-				{
-					return _isValid;
-				}
-			}
-
-			property double Humidity
-			{
-				double get()
-				{
-					return _humidity;
-				}
-			}
-
-			property double Temperature
-			{
-				double get()
-				{
-					return _temperature;
-				}
-			}
-
-			property bool TimedOut
-			{
-				bool get()
-				{
-					return _timedOut;
-				}
-			}
+				virtual Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading();
+				virtual Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading(int maxRetries);
 
 			private:
-			bool _timedOut = false;
-			bool _isValid = false;
-			double _temperature = 0;
-			double _humidity = 0;
+				Windows::Devices::Gpio::GpioPinDriveMode _inputReadMode;
+				Windows::Devices::Gpio::GpioPin^ _pin;
 
-			Windows::Devices::Gpio::GpioPin^ _pin;
-
-			void CalculateValues(std::bitset<40> bits);
+				DhtReading InternalGetReading();
+				DhtReading Dht11::CalculateValues(std::bitset<40> bits);
 		};
 	}
 }
