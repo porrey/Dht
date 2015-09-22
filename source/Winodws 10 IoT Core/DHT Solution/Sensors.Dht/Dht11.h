@@ -18,8 +18,8 @@ namespace Sensors
 
 		public interface class IDht
 		{
-			Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading();
-			Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading(int maxRetries);
+			Windows::Foundation::IAsyncOperation<DhtReading>^ GetReadingAsync();
+			Windows::Foundation::IAsyncOperation<DhtReading>^ GetReadingAsync(int maxRetries);
 		};
 
 		public ref class Dht11 sealed : IDht
@@ -28,8 +28,8 @@ namespace Sensors
 				Dht11(Windows::Devices::Gpio::GpioPin^ pin, Windows::Devices::Gpio::GpioPinDriveMode inputReadMode);
 				virtual ~Dht11();
 
-				virtual Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading();
-				virtual Windows::Foundation::IAsyncOperation<DhtReading>^ GetReading(int maxRetries);
+				virtual Windows::Foundation::IAsyncOperation<DhtReading>^ GetReadingAsync();
+				virtual Windows::Foundation::IAsyncOperation<DhtReading>^ GetReadingAsync(int maxRetries);
 
 			private:
 				Windows::Devices::Gpio::GpioPinDriveMode _inputReadMode;

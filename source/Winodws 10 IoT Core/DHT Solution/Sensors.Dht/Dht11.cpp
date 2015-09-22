@@ -32,12 +32,12 @@ Dht11::~Dht11()
 	this->_pin = nullptr;
 }
 
-Windows::Foundation::IAsyncOperation<DhtReading>^ Dht11::GetReading()
+Windows::Foundation::IAsyncOperation<DhtReading>^ Dht11::GetReadingAsync()
 {
-	return this->GetReading(DEFAULT_MAX_RETRIES);
+	return this->GetReadingAsync(DEFAULT_MAX_RETRIES);
 }
 
-Windows::Foundation::IAsyncOperation<DhtReading>^ Dht11::GetReading(int maxRetries)
+Windows::Foundation::IAsyncOperation<DhtReading>^ Dht11::GetReadingAsync(int maxRetries)
 {
 	return create_async([this, maxRetries]
 	{
