@@ -226,6 +226,9 @@
   <ItemGroup>
     <SDKReference Include="WindowsIoT, Version=10.0.10240.0" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\..\..\..\OneDrive\IoT\Hackster.io\DHT11\DHT11-Technical-Data-Sheet-Translated-Version.pdf" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
