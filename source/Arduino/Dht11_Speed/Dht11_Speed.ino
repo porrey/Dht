@@ -1,5 +1,24 @@
+// Copyright © 2015 Daniel Porrey
+//
+// This file is part of the DHT11 Temperature Sensor project
+// on hackster.io.
+// 
+// Dht11_Speed.ino is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Dht11_Speed.ino is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Dht11_Speed.c. If not, see http://www.gnu.org/licenses/.
+//
+
 /*
-  Dht11_Speed
+  Dht11_Speed v.100
   Test the speed at which the DHT11 can be sampled
   by decreasing and increasing the delay time between
   readings until a "steady state" is achieved where
@@ -95,12 +114,16 @@ void loop()
   // ***
   // *** Display Sensor Reading
   // ***
+  int farenheit = DHT.temperature * 9. / 5. + 32;
+  
   Serial.print("Humidity = ");
   Serial.print(DHT.humidity, 0);
   Serial.print(" %, ");
   Serial.print("Temperature = ");
   Serial.print(DHT.temperature, 0);
-  Serial.println(" C");
+  Serial.print(" C (");
+  Serial.print(farenheit);
+  Serial.println(" F)");
 
   // ***
   // *** Check if the reading sample are taken too fast
