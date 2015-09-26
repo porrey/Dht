@@ -2,44 +2,44 @@
 //
 // This file is part of the DHT11 Temperature Sensor project
 // on hackster.io.
-// 
+//
 // Dht11_Speed.ino is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Dht11_Speed.ino is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Dht11_Speed.c. If not, see http://www.gnu.org/licenses/.
 //
 
 /*
-  Dht11_Speed v.100
+  Dht11_Speed v1.02
   Test the speed at which the DHT11 can be sampled
   by decreasing and increasing the delay time between
   readings until a "steady state" is achieved where
   readings can be taken sequentially without errors
-    
+
   This sketch was created for the DHT11 project on
   Hackster.io at https://www.hackster.io/porrey/dht11
   to compare th speed at which a readings from the DHT11
-  can be taken on a Arduino Uno and compare this to the 
+  can be taken on a Arduino Uno and compare this to the
   speed at which they can be taken on a Raspberry Pi 2
   using Windows 10 IoT Core.
-  
+
   Created:        September 19th, 2015
   Last Modified:  September 19th, 2015
   Created By:     Daniel Porrey
-  Site:           https://www.hackster.io/porrey  
-  
-  Requires DHT Library 0.1.13 or 0.1.20 (may not work 
+  Site:           https://www.hackster.io/porrey
+
+  Requires DHT Library 0.1.13 or 0.1.20 (may not work
   against other versions of this library). Found at
   http://arduino.cc/playground/Main/DHTLib
-  
+
   Source code on Github at:
   https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib
 */
@@ -48,20 +48,46 @@
 
 dht DHT;
 
-#define DHT11_PIN 5
-#define READING_SAMPLES 5
-#define MAXIMUM_LOOP_DELAY 2000
-#define LOOP_DELAY_DECREASE .2
-#define LOOP_DELAY_INCREASE 1
+#define DHT11_PIN 5              // *** Physical pin on board
+#define READING_SAMPLES 5        // *** Fixed count
+#define MINIMUM_LOOP_DELAY 0     // *** ms
+#define MAXIMUM_LOOP_DELAY 1000  // *** ms
+#define LOOP_DELAY_DECREASE .2   // *** Percentage
+#define LOOP_DELAY_INCREASE 1    // *** Fixed value
 
-int _loopDelay = MAXIMUM_LOOP_DELAY;
-int _previousLoopDelay = MAXIMUM_LOOP_DELAY;
-int _consecutiveReadings = 0;
-int _errors = 0;
-bool _steadyState = false;
+// ***
+// *** The current loop delay
+// ***
+int _loopDelay;
+
+// ***
+// *** Number of consecutive successful readings
+// ***
+int _consecutiveReadings;
+
+// ***
+// *** Number of consecutive failed readings
+// ***
+int _consecutiveErrors;
+
+// ***
+// *** True when the lowest delay has been
+// *** found; false otherwise.
+// ***
+bool _foundLowestDelay;
+
+// ***
+// ***
+// ***
+int _counter = 0;
 
 void setup()
 {
+  // ***
+  // *** Initialize
+  // ***
+  ResetWhen(true);
+
   // ***
   // *** Display application information
   // ***
@@ -69,53 +95,71 @@ void setup()
   Serial.println("DHT11 SPEED TEST PROGRAM ");
   Serial.print("DHT LIBRARY VERSION: ");
   Serial.println(DHT_LIB_VERSION);
-  
+
+  // ***
+  // *** Check the library version anbd display
+  // *** a warning ifd not supported (but
+  // *** continue running anyway).
+  // ***
   if (DHT_LIB_VERSION != "0.1.13" &&
       DHT_LIB_VERSION != "0.1.20")
   {
     Serial.println("This sketch has not been tested against this version of the DHT library.");
   }
 
+  // ***
+  // *** Print a blank line
+  // ***
   Serial.println();
-
-  // ***
-  // *** Display the current loop delay in ms
-  // ***
-  DisplayLoopDelay();
 }
 
 void loop()
 {
   // ***
-  // *** Read Data
+  // *** Read the sensor data
   // ***
-  Serial.print("DHT11 = ");
   int chk = DHT.read11(DHT11_PIN);
+
+  // ***
+  // *** Increment the counter
+  // ***
+  _counter++;
+
+  // ***
+  // *** Display the counter using
+  // *** a fixed width string.
+  // ***
+  char counterDisplay[7];
+  sprintf(counterDisplay, "[%4d]", _counter);
+  Serial.print(counterDisplay);
+
+  // ***
+  // *** Start the display
+  // ***
+  Serial.print("[DHT11 ");
+
   switch (chk)
   {
     case DHTLIB_OK:
-      Serial.print("OK, ");
+      Serial.print("- OK   ] ");
       OnSuccess();
       break;
     case DHTLIB_ERROR_CHECKSUM:
-      Serial.print("Checksum Error, ");
-      OnFail();
-      break;
     case DHTLIB_ERROR_TIMEOUT:
-      Serial.print("Time Out, ");
-      OnFail();
-      break;
     default:
-      Serial.print("Unknown Error, ");
+      Serial.print("- Error] ");
       OnFail();
       break;
   }
 
   // ***
-  // *** Display Sensor Reading
+  // *** Convert the reading to Farenheit
   // ***
-  int farenheit = DHT.temperature * 9. / 5. + 32;
-  
+  float farenheit = DHT.temperature * (9. / 5.) + 32.;
+
+  // ***
+  // *** Display the result
+  // ***
   Serial.print("Humidity = ");
   Serial.print(DHT.humidity, 0);
   Serial.print(" %, ");
@@ -123,42 +167,37 @@ void loop()
   Serial.print(DHT.temperature, 0);
   Serial.print(" C (");
   Serial.print(farenheit);
-  Serial.println(" F)");
+  Serial.print(" F), ");
+  Serial.print(" delay = ");
+  Serial.print(_loopDelay);
+  Serial.println(" ms");
 
   // ***
-  // *** Check if the reading sample are taken too fast
-  // *** and increase the delay if necessary
+  // *** Check if the reading samples are taken too fast
+  // *** or too slow and adjust.
   // ***
   if (IsTooFast())
-  {    
+  {
+    // ***
+    // *** To fast;  increase the delay to slow down.
+    // ***
     IncreaseLoopDelay();
-    DisplayLoopDelay();
   }
   else if (IsTooSlow())
   {
-    _consecutiveReadings = 0;
-    _steadyState = false;
-
+    // ***
+    // *** To slow;  decrease the delay to speed up.
+    // ***
     DecreaseLoopDelay();
-    DisplayLoopDelay();
   }
-  else
-  {
-    // ***
-    // *** Determine if steady state has 
-    // *** been achieved and set the application
-    // *** at steady if true.
-    // *** 
-    DetermineIfAtSteadyStateAndSet();
-    
-    // ***
-    // *** Steady must be reset after it is achieved 
-    // *** and one or more errors occur. This causes
-    // *** the application to "tune" the delay again.
-    // ***
-    ResetWhen(_steadyState && _errors > 0);
-  }
-  
+
+  // ***
+  // *** Reset if we start getting a lot of
+  // *** consecutive errors. This allows the
+  // *** application to "tune" the delay again.
+  // ***
+  ResetWhen(_consecutiveErrors > READING_SAMPLES);
+
   // ***
   // *** Delay before taking another reading
   // ***
@@ -171,10 +210,14 @@ void loop()
 void OnSuccess()
 {
   // ***
-  // *** Increment the counter. Looking to get a
-  // *** all successful samples sequentially
+  // *** Increment the _consecutiveReadings counter
   // ***
   _consecutiveReadings++;
+
+  // ***
+  // *** Reset the _consecutiveErrors counter
+  // ***
+  _consecutiveErrors = 0;
 }
 
 // ***
@@ -183,50 +226,14 @@ void OnSuccess()
 void OnFail()
 {
   // ***
-  // *** Increment the error count
+  // *** Increment the _consecutiveErrors counter
   // ***
-  _errors++;
-  
+  _consecutiveErrors++;
+
   // ***
-  // *** Reset the number of consecutive readings
+  // *** Reset the _consecutiveReadings counter
   // ***
   _consecutiveReadings = 0;
-}
-
-// ***
-// *** Displays the current loop
-// *** delay value.
-// ***
-void DisplayLoopDelay()
-{
-  // ***
-  // *** Determine if the loop delay has increased,
-  // *** decreased or statyed the same
-  // ***
-  if (_loopDelay == _previousLoopDelay)
-  {
-    // ***
-    // *** Loop delay is the same.
-    // ***
-    Serial.print("Loop delay is ");
-  }
-  else if (_loopDelay < _previousLoopDelay)
-  {
-    // ***
-    // *** Loop delay decreased.
-    // ***
-    Serial.print("Too slow! Loop delay decreased to ");
-  }
-  else
-  {
-    // ***
-    // *** Loop delay increased.
-    // ***
-    Serial.print("Too fast! Loop delay increased to ");
-  }
-
-  Serial.print(_loopDelay);
-  Serial.println(" ms");
 }
 
 // ***
@@ -244,14 +251,26 @@ void IncreaseLoopDelay()
     // ***
     // *** Increase the loop delay by 1 ms.
     // ***
-    _previousLoopDelay = _loopDelay;
     _loopDelay += LOOP_DELAY_INCREASE;
+
+    // ***
+    // *** Reset the counter since this is a new speed. This
+    // *** cal is the resul tof errors so do not reset the
+    // *** error count.
+    // ***
+    _consecutiveReadings = 0;
+
+    // ***
+    // *** Calling IncreaseLoopDelay() means we
+    // *** found the lowest delay.
+    // ***
+    _foundLowestDelay = true;
   }
 }
 
 // ***
 // *** Decrease the loop delay to take
-// *** readings fatser (take them more 
+// *** readings faster (take them more
 // *** often).
 // ***
 void DecreaseLoopDelay()
@@ -259,18 +278,25 @@ void DecreaseLoopDelay()
   // ***
   // *** Never let loop delay get below 0.
   // ***
-  if (_loopDelay > 0)
+  if (_loopDelay > MINIMUM_LOOP_DELAY)
   {
     // ***
     // *** Reduce the loop delay.
     // ***
-    _previousLoopDelay = _loopDelay;
     _loopDelay -= (int)(_loopDelay * LOOP_DELAY_DECREASE);
-    
+
     // ***
-    // *** Loop delay must be 0 or greater.
+    // *** Loop delay must be MINIMUM_LOOP_DELAY or greater.
     // ***
-    if (_loopDelay < 0) _loopDelay = 0;
+    if (_loopDelay < MINIMUM_LOOP_DELAY) _loopDelay = MINIMUM_LOOP_DELAY;
+
+    // ***
+    // *** Reset the counters since this is a new speed. This
+    // *** call is not the resul tof errors so the error count
+    // *** is reset too.
+    // ***
+    _consecutiveReadings = 0;
+    _consecutiveErrors = 0;
   }
 }
 
@@ -283,15 +309,10 @@ bool IsTooFast()
   bool returnValue = false;
 
   // ***
-  // *** We are too fast if there are errors,
-  // *** we have not taken enough consecutive
-  // *** readings (one more than required) and 
-  // *** loop delay is some value less the 
-  // *** maximum (we are already the slowest 
-  // *** we can get).
+  // *** We are too fast if there is at least
+  // *** one error.
   // ***
-  if (_errors > 0
-      && _consecutiveReadings <= READING_SAMPLES
+  if (_consecutiveErrors > 0
       && _loopDelay < MAXIMUM_LOOP_DELAY)
   {
     returnValue = true;
@@ -308,12 +329,11 @@ bool IsTooSlow()
   bool returnValue = false;
 
   // ***
-  // *** Too slow if we are not at steady state, there
-  // *** are not errors and we have taken enough consecutive
-  // *** readings.
+  // *** Too slow if we have not yet found the
+  // *** lowest delay and we have had enough
+  // *** consecutive readings.
   // ***
-  if (!_steadyState 
-      && _errors == 0
+  if (!_foundLowestDelay
       && _consecutiveReadings >= READING_SAMPLES)
   {
     returnValue = true;
@@ -323,26 +343,7 @@ bool IsTooSlow()
 }
 
 // ***
-// *** Determine if steady state has 
-// *** been achieved and set the application
-// *** at steady if true.
-// ***
-void DetermineIfAtSteadyStateAndSet()
-{
-  // ***
-  // *** Set steady state when we are not 
-  // *** already at it and we have read enough
-  // *** consecutive readings from the sensor.
-  // ***
-  if (!_steadyState && _consecutiveReadings >= READING_SAMPLES)
-  {
-    _errors = 0;
-    _steadyState = true;
-  } 
-}
-
-// ***
-// *** Resets the application when the given 
+// *** Resets the application when the given
 // *** condition is true.
 // ***
 void ResetWhen(bool condition)
@@ -354,10 +355,9 @@ void ResetWhen(bool condition)
     // *** original values when the application
     // *** started.
     // ***
-    _steadyState = false;
     _loopDelay = MAXIMUM_LOOP_DELAY;
-    _previousLoopDelay = MAXIMUM_LOOP_DELAY;
     _consecutiveReadings = 0;
-    _errors = 0;    
+    _consecutiveErrors = 0;
+    _foundLowestDelay = false;
   }
 }
