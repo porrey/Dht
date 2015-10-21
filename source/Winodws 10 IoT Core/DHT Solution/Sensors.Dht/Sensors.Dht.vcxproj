@@ -210,9 +210,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Dht11.h" />
+    <ClInclude Include="Dht.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Dht11.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -221,12 +222,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Dht11.cpp" />
+    <ClCompile Include="Dht22.cpp" />
   </ItemGroup>
   <ItemGroup>
     <SDKReference Include="WindowsIoT, Version=10.0.10240.0" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\..\..\..\OneDrive\IoT\Data Sheets\DHT11.pdf" />
+    <None Include="..\..\..\..\..\..\..\OneDrive\IoT\Data Sheets\DHT22.pdf" />
     <None Include="..\..\..\..\..\..\..\OneDrive\IoT\Hackster.io\DHT11\DHT11-Technical-Data-Sheet-Translated-Version.pdf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -4,18 +4,17 @@ using System.Linq;
 using Sensors.Dht;
 using Sensors.OneWire.Common;
 using Windows.Devices.Gpio;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 
 namespace Sensors.OneWire
 {
-    public sealed partial class MainPage : BindablePage
+	public sealed partial class MainPage : BindablePage
     {
         private DispatcherTimer _timer = new DispatcherTimer();
 
         GpioPin _pin = null;
-        private IDht _dht11 = null;
+        private IDht _dht = null;
         private List<int> _retryCount = new List<int>();
         private DateTimeOffset _startedAt = DateTime.MinValue;
 
@@ -32,7 +31,7 @@ namespace Sensors.OneWire
             base.OnNavigatedTo(e);
 
             _pin = GpioController.GetDefault().OpenPin(4, GpioSharingMode.Exclusive);
-            _dht11 = new Dht11(_pin, GpioPinDriveMode.Input);
+            _dht = new Dht11(_pin, GpioPinDriveMode.Input);
 
             _timer.Start();
 
@@ -46,7 +45,7 @@ namespace Sensors.OneWire
             _pin.Dispose();
             _pin = null;
 
-            _dht11 = null;
+            _dht = null;
 
             base.OnNavigatedFrom(e);
         }
@@ -57,21 +56,25 @@ namespace Sensors.OneWire
             int val = this.TotalAttempts;
             this.TotalAttempts++;
 
-            reading = await _dht11.GetReadingAsync().AsTask();
+            reading = await _dht.GetReadingAsync().AsTask();
 
             _retryCount.Add(reading.RetryCount);
             this.OnPropertyChanged(nameof(AverageRetriesDisplay));
             this.OnPropertyChanged(nameof(TotalAttempts));
             this.OnPropertyChanged(nameof(PercentSuccess));
 
-            if (reading.IsValid)
-            {
-                this.TotalSuccess++;
-                this.Temperature = Convert.ToSingle(reading.Temperature);
-                this.Humidity = Convert.ToSingle(reading.Humidity);
-                this.LastUpdated = DateTimeOffset.Now;
-                this.OnPropertyChanged(nameof(SuccessRate));
-            }
+			if (reading.IsValid)
+			{
+				this.TotalSuccess++;
+				this.Temperature = Convert.ToSingle(reading.Temperature);
+				this.Humidity = Convert.ToSingle(reading.Humidity);
+				this.LastUpdated = DateTimeOffset.Now;
+				this.OnPropertyChanged(nameof(SuccessRate));
+			}
+			else
+			{
+
+			}
 
             this.OnPropertyChanged(nameof(LastUpdatedDisplay));
         }
@@ -144,7 +147,7 @@ namespace Sensors.OneWire
         {
             get
             {
-                return string.Format("{0:0}% RH", this.Humidity);
+                return string.Format("{0:0.0}% RH", this.Humidity);
             }
         }
 
@@ -166,7 +169,7 @@ namespace Sensors.OneWire
         {
             get
             {
-                return string.Format("{0:0} °C", this.Temperature);
+                return string.Format("{0:0.0} °C", this.Temperature);
             }
         }
 
