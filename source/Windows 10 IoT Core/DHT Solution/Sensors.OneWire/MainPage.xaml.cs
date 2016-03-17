@@ -16,7 +16,7 @@ namespace Sensors.OneWire
         GpioPin _pin = null;
         private IDht _dht = null;
         private List<int> _retryCount = new List<int>();
-        private DateTimeOffset _startedAt = DateTime.MinValue;
+        private DateTimeOffset _startedAt = DateTimeOffset.MinValue;
 
         public MainPage()
         {
