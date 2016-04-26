@@ -30,12 +30,17 @@ namespace Sensors.OneWire
         {
             base.OnNavigatedTo(e);
 
-            _pin = GpioController.GetDefault().OpenPin(4, GpioSharingMode.Exclusive);
-            _dht = new Dht11(_pin, GpioPinDriveMode.Input);
+            _pin = GpioController.GetDefault().OpenPin(17, GpioSharingMode.Exclusive);
+            _dht = new Dht22(_pin, GpioPinDriveMode.Input);
 
             _timer.Start();
 
             _startedAt = DateTimeOffset.Now;
+
+			// ***
+			// *** Uncomment to simulate heavy CPU usage
+			// ***
+			//CpuKiller.StartEmulation();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -47,7 +52,9 @@ namespace Sensors.OneWire
 
             _dht = null;
 
-            base.OnNavigatedFrom(e);
+			CpuKiller.StopEmulation();
+
+			base.OnNavigatedFrom(e);
         }
 
         private async void _timer_Tick(object sender, object e)
