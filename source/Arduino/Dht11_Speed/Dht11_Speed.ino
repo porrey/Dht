@@ -97,8 +97,8 @@ void setup()
   Serial.println(DHT_LIB_VERSION);
 
   // ***
-  // *** Check the library version anbd display
-  // *** a warning ifd not supported (but
+  // *** Check the library version and display
+  // *** a warning if not supported (but
   // *** continue running anyway).
   // ***
   if (DHT_LIB_VERSION != "0.1.13" &&
@@ -153,7 +153,7 @@ void loop()
   }
 
   // ***
-  // *** Convert the reading to Farenheit
+  // *** Convert the reading to Fahrenheit
   // ***
   float farenheit = DHT.temperature * (9. / 5.) + 32.;
 
@@ -255,7 +255,7 @@ void IncreaseLoopDelay()
 
     // ***
     // *** Reset the counter since this is a new speed. This
-    // *** cal is the resul tof errors so do not reset the
+    // *** cal is the result of errors so do not reset the
     // *** error count.
     // ***
     _consecutiveReadings = 0;
@@ -292,7 +292,7 @@ void DecreaseLoopDelay()
 
     // ***
     // *** Reset the counters since this is a new speed. This
-    // *** call is not the resul tof errors so the error count
+    // *** call is not the result of errors so the error count
     // *** is reset too.
     // ***
     _consecutiveReadings = 0;
