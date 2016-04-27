@@ -78,10 +78,6 @@ namespace Sensors.OneWire
 				this.LastUpdated = DateTimeOffset.Now;
 				this.OnPropertyChanged(nameof(SuccessRate));
 			}
-			else
-			{
-
-			}
 
             this.OnPropertyChanged(nameof(LastUpdatedDisplay));
         }
