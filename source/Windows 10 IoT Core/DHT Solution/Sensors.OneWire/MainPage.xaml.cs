@@ -30,28 +30,43 @@ namespace Sensors.OneWire
         {
             base.OnNavigatedTo(e);
 
-			_pin = GpioController.GetDefault().OpenPin(17, GpioSharingMode.Exclusive);
-            _dht = new Dht22(_pin, GpioPinDriveMode.Input);
+			GpioController controller = GpioController.GetDefault();
 
-            _timer.Start();
+			if (controller != null)
+			{
+				_pin = GpioController.GetDefault().OpenPin(17, GpioSharingMode.Exclusive);
+				_dht = new Dht22(_pin, GpioPinDriveMode.Input);
+				_timer.Start();
+				_startedAt = DateTimeOffset.Now;
 
-            _startedAt = DateTimeOffset.Now;
-
-			// ***
-			// *** Uncomment to simulate heavy CPU usage
-			// ***
-			//CpuKiller.StartEmulation();
+				// ***
+				// *** Uncomment to simulate heavy CPU usage
+				// ***
+				//CpuKiller.StartEmulation();
+			}
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             _timer.Stop();
 
-            _pin.Dispose();
-            _pin = null;
+			// ***
+			// *** Dispose the pin.
+			// ***
+			if (_pin != null)
+			{
+				_pin.Dispose();
+				_pin = null;
+			}
 
-            _dht = null;
+			// ***
+			// *** Set the Dht object reference to null.
+			// ***
+			_dht = null;
 
+			// ***
+			// *** Stop the high CPU usage simulation.
+			// ***
 			CpuKiller.StopEmulation();
 
 			base.OnNavigatedFrom(e);
