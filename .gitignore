@@ -210,3 +210,5 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/source/Windows 10 IoT Core/DHT Solution/DHT Solution.VC.db
+/source/Windows 10 IoT Core/DHT Solution/DHT Solution.VC.VC.opendb

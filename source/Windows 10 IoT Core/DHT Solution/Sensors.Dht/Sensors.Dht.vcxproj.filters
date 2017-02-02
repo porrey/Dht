@@ -24,5 +24,6 @@
     <None Include="..\..\..\..\..\..\..\OneDrive\IoT\Data Sheets\DHT22.pdf">
       <Filter>Documents</Filter>
     </None>
+    <None Include="..\..\..\..\..\..\..\Desktop\NuGet\Dht.1.0.0.nupkg" />
   </ItemGroup>
 </Project>
