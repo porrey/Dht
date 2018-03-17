@@ -1,0 +1,186 @@
+﻿<common:BindablePage x:Class="Dht.Multi.Sample.MainPage"
+					 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+					 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+					 xmlns:common="using:Dht.Multi.Sample.Common"
+					 mc:Ignorable="d">
+
+	<common:BindablePage.Resources>
+		<common:DoubleToStringConverter x:Key="DoubleToStringConverter" />
+	</common:BindablePage.Resources>
+
+	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*" />
+			<ColumnDefinition Width="1*" />
+			<ColumnDefinition Width="1*" />
+			<ColumnDefinition Width="1*" />
+		</Grid.ColumnDefinitions>
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="1*" />
+			<RowDefinition Height="1*" />
+			<RowDefinition Height="1*" />
+			<RowDefinition Height="3*" />
+		</Grid.RowDefinitions>
+
+		<!-- Header -->
+		<TextBlock Grid.Column="0"
+				   Grid.ColumnSpan="4"
+				   Grid.Row="0"
+				   FontSize="65"
+				   FontWeight="Light"
+				   Text="Multiple DHT 11/22 Example"
+				   VerticalAlignment="Center"
+				   HorizontalAlignment="Left"
+				   Margin="20,20,20,0" />
+
+		<!-- Temperature Label -->
+		<TextBlock Grid.Column="0"
+				   Grid.Row="2"
+				   FontSize="42"
+				   FontWeight="Normal"
+				   Text="Temperature"
+				   VerticalAlignment="Center"
+				   HorizontalAlignment="Center"
+				   Margin="10,0,0,0" />
+
+		<!-- Humidity Label -->
+		<TextBlock Grid.Column="0"
+				   Grid.Row="3"
+				   FontSize="42"
+				   FontWeight="Normal"
+				   Text="Humidity"
+				   VerticalAlignment="Center"
+				   HorizontalAlignment="Center"
+				   Margin="10,0,0,0" />
+
+		<!-- DHT 1 Label -->
+		<TextBlock Grid.Column="1"
+				   Grid.Row="1"
+				   FontSize="42"
+				   FontWeight="Medium"
+				   Text="DHT 1"
+				   VerticalAlignment="Center"
+				   HorizontalAlignment="Center"
+				   Margin="10,0,0,0" />
+
+		<!-- DHT 2 Label -->
+		<TextBlock Grid.Column="2"
+				   Grid.Row="1"
+				   FontSize="42"
+				   FontWeight="Medium"
+				   Text="DHT 2"
+				   VerticalAlignment="Center"
+				   HorizontalAlignment="Center"
+				   Margin="10,0,0,0" />
+
+		<!-- DHT 3 Label -->
+		<TextBlock Grid.Column="3"
+				   Grid.Row="1"
+				   FontSize="42"
+				   FontWeight="Medium"
+				   Text="DHT 3"
+				   VerticalAlignment="Center"
+				   HorizontalAlignment="Center"
+				   Margin="10,0,0,0" />
+
+		<!-- Temperature 1 -->
+		<StackPanel Grid.Column="1"
+					Grid.Row="2"
+					Orientation="Horizontal"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center">
+			<TextBlock FontSize="42"
+					   FontWeight="Light"
+					   Text="{x:Bind Temperature1, Mode=OneWay, TargetNullValue=0, Converter={StaticResource DoubleToStringConverter}}"
+					   Margin="10,0,0,0" />
+			<TextBlock Text="C"
+					   FontSize="42"
+					   FontWeight="Light"
+					   Margin="10,0,0,0" />
+		</StackPanel>
+
+		<!-- Temperature 2 -->
+		<StackPanel Grid.Column="2"
+					Grid.Row="2"
+					Orientation="Horizontal"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center">
+			<TextBlock FontSize="42"
+					   FontWeight="Light"
+					   Text="{x:Bind Temperature2, Mode=OneWay,TargetNullValue=0, Converter={StaticResource DoubleToStringConverter}}"
+					   Margin="10,0,0,0" />
+			<TextBlock Text="C"
+					   FontSize="42"
+					   FontWeight="Light"
+					   Margin="10,0,0,0" />
+		</StackPanel>
+
+		<!-- Temperature 3 -->
+		<StackPanel Grid.Column="3"
+					Grid.Row="2"
+					Orientation="Horizontal"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center">
+			<TextBlock FontSize="42"
+					   FontWeight="Light"
+					   Text="{x:Bind Temperature3, Mode=OneWay, TargetNullValue=0, Converter={StaticResource DoubleToStringConverter}}"
+					   Margin="10,0,0,0" />
+			<TextBlock Text="C"
+					   FontSize="42"
+					   FontWeight="Light"
+					   Margin="10,0,0,0" />
+		</StackPanel>
+
+		<!-- Humidity 1 -->
+		<StackPanel Grid.Column="1"
+					Grid.Row="3"
+					Orientation="Horizontal"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center">
+			<TextBlock FontSize="42"
+					   FontWeight="Light"
+					   Text="{x:Bind Humidity1, Mode=OneWay, TargetNullValue=0, Converter={StaticResource DoubleToStringConverter}}"
+					   Margin="10,0,0,0" />
+			<TextBlock Text="%"
+					   FontSize="42"
+					   FontWeight="Light"
+					   Margin="10,0,0,0" />
+		</StackPanel>
+
+		<!-- Humidity 2 -->
+		<StackPanel Grid.Column="2"
+					Grid.Row="3"
+					Orientation="Horizontal"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center">
+			<TextBlock FontSize="42"
+					   FontWeight="Light"
+					   Text="{x:Bind Humidity2, Mode=OneWay, TargetNullValue=0, Converter={StaticResource DoubleToStringConverter}}"
+					   Margin="10,0,0,0" />
+			<TextBlock Text="%"
+					   FontSize="42"
+					   FontWeight="Light"
+					   Margin="10,0,0,0" />
+		</StackPanel>
+
+		<!-- Humidity 3 -->
+		<StackPanel Grid.Column="3"
+					Grid.Row="3"
+					Orientation="Horizontal"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center">
+			<TextBlock FontSize="42"
+					   FontWeight="Light"
+					   Text="{x:Bind Humidity3, Mode=OneWay, TargetNullValue=0, Converter={StaticResource DoubleToStringConverter}}"
+					   Margin="10,0,0,0" />
+			<TextBlock Text="%"
+					   FontSize="42"
+					   FontWeight="Light"
+					   Margin="10,0,0,0" />
+		</StackPanel>
+	</Grid>
+</common:BindablePage>
