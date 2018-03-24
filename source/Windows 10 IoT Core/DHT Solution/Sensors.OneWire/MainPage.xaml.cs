@@ -23,7 +23,7 @@ namespace Sensors.OneWire
             this.InitializeComponent();
 
             _timer.Interval = TimeSpan.FromSeconds(1);
-            _timer.Tick += _timer_Tick;
+            _timer.Tick += this.Timer_Tick;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -35,7 +35,7 @@ namespace Sensors.OneWire
 			if (controller != null)
 			{
 				_pin = GpioController.GetDefault().OpenPin(17, GpioSharingMode.Exclusive);
-				_dht = new Dht22(_pin, GpioPinDriveMode.Input);
+				_dht = new Dht11(_pin, GpioPinDriveMode.Input);
 				_timer.Start();
 				_startedAt = DateTimeOffset.Now;
 
@@ -72,7 +72,7 @@ namespace Sensors.OneWire
 			base.OnNavigatedFrom(e);
         }
 
-        private async void _timer_Tick(object sender, object e)
+        private async void Timer_Tick(object sender, object e)
         {
             DhtReading reading = new DhtReading();
             int val = this.TotalAttempts;
@@ -81,9 +81,9 @@ namespace Sensors.OneWire
             reading = await _dht.GetReadingAsync().AsTask();
 
             _retryCount.Add(reading.RetryCount);
-            this.OnPropertyChanged(nameof(AverageRetriesDisplay));
-            this.OnPropertyChanged(nameof(TotalAttempts));
-            this.OnPropertyChanged(nameof(PercentSuccess));
+            this.OnPropertyChanged(nameof(this.AverageRetriesDisplay));
+            this.OnPropertyChanged(nameof(this.TotalAttempts));
+            this.OnPropertyChanged(nameof(this.PercentSuccess));
 
 			if (reading.IsValid)
 			{
@@ -91,10 +91,10 @@ namespace Sensors.OneWire
 				this.Temperature = Convert.ToSingle(reading.Temperature);
 				this.Humidity = Convert.ToSingle(reading.Humidity);
 				this.LastUpdated = DateTimeOffset.Now;
-				this.OnPropertyChanged(nameof(SuccessRate));
+				this.OnPropertyChanged(nameof(this.SuccessRate));
 			}
 
-            this.OnPropertyChanged(nameof(LastUpdatedDisplay));
+            this.OnPropertyChanged(nameof(this.LastUpdatedDisplay));
         }
 
         public string PercentSuccess
@@ -128,7 +128,7 @@ namespace Sensors.OneWire
             set
             {
                 this.SetProperty(ref _totalAttempts, value);
-                this.OnPropertyChanged(nameof(PercentSuccess));
+                this.OnPropertyChanged(nameof(this.PercentSuccess));
             }
         }
 
@@ -142,7 +142,7 @@ namespace Sensors.OneWire
             set
             {
                 this.SetProperty(ref _totalSuccess, value);
-                this.OnPropertyChanged(nameof(PercentSuccess));
+                this.OnPropertyChanged(nameof(this.PercentSuccess));
             }
         }
 
@@ -157,7 +157,7 @@ namespace Sensors.OneWire
             set
             {
                 this.SetProperty(ref _humidity, value);
-                this.OnPropertyChanged(nameof(HumidityDisplay));
+                this.OnPropertyChanged(nameof(this.HumidityDisplay));
             }
         }
 
@@ -179,7 +179,7 @@ namespace Sensors.OneWire
             set
             {
                 this.SetProperty(ref _temperature, value);
-                this.OnPropertyChanged(nameof(TemperatureDisplay));
+                this.OnPropertyChanged(nameof(this.TemperatureDisplay));
             }
         }
 
@@ -201,7 +201,7 @@ namespace Sensors.OneWire
             set
             {
                 this.SetProperty(ref _lastUpdated, value);
-                this.OnPropertyChanged(nameof(LastUpdatedDisplay));
+                this.OnPropertyChanged(nameof(this.LastUpdatedDisplay));
             }
         }
 
