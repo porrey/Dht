@@ -24,6 +24,6 @@
     <None Include="..\..\..\..\..\..\..\OneDrive\IoT\Data Sheets\DHT22.pdf">
       <Filter>Documents</Filter>
     </None>
-    <None Include="Dht.1.0.2.nupkg" />
+    <None Include="Dht.1.0.3.nupkg" />
   </ItemGroup>
 </Project>
