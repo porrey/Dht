@@ -1,4 +1,4 @@
-// Copyright © 2015 Daniel Porrey
+// Copyright © 2015-2022 Daniel Porrey
 //
 // This file is part of the DHT11 Temperature Sensor project
 // on hackster.io.
@@ -48,94 +48,94 @@
 
 dht DHT;
 
-#define DHT11_PIN 5              // *** Physical pin on board
-#define READING_SAMPLES 5        // *** Fixed count
-#define MINIMUM_LOOP_DELAY 0     // *** ms
-#define MAXIMUM_LOOP_DELAY 1000  // *** ms
-#define LOOP_DELAY_DECREASE .2   // *** Percentage
-#define LOOP_DELAY_INCREASE 1    // *** Fixed value
+#define DHT11_PIN 5              // Physical pin on board
+#define READING_SAMPLES 5        // Fixed count
+#define MINIMUM_LOOP_DELAY 0     // ms
+#define MAXIMUM_LOOP_DELAY 1000  // ms
+#define LOOP_DELAY_DECREASE .2   // Percentage
+#define LOOP_DELAY_INCREASE 1    // Fixed value
 
-// ***
-// *** The current loop delay
-// ***
+//
+// The current loop delay
+//
 int _loopDelay;
 
-// ***
-// *** Number of consecutive successful readings
-// ***
+//
+// Number of consecutive successful readings
+//
 int _consecutiveReadings;
 
-// ***
-// *** Number of consecutive failed readings
-// ***
+//
+// Number of consecutive failed readings
+//
 int _consecutiveErrors;
 
-// ***
-// *** True when the lowest delay has been
-// *** found; false otherwise.
-// ***
+//
+// True when the lowest delay has been
+// found; false otherwise.
+//
 bool _foundLowestDelay;
 
-// ***
-// ***
-// ***
+//
+//
+//
 int _counter = 0;
 
 void setup()
 {
-  // ***
-  // *** Initialize
-  // ***
+  //
+  // Initialize
+  //
   ResetWhen(true);
 
-  // ***
-  // *** Display application information
-  // ***
+  //
+  // Display application information
+  //
   Serial.begin(115200);
   Serial.println("DHT11 SPEED TEST PROGRAM ");
   Serial.print("DHT LIBRARY VERSION: ");
   Serial.println(DHT_LIB_VERSION);
 
-  // ***
-  // *** Check the library version and display
-  // *** a warning if not supported (but
-  // *** continue running anyway).
-  // ***
+  //
+  // Check the library version and display
+  // a warning if not supported (but
+  // continue running anyway).
+  //
   if (DHT_LIB_VERSION != "0.1.13" &&
       DHT_LIB_VERSION != "0.1.20")
   {
     Serial.println("This sketch has not been tested against this version of the DHT library.");
   }
 
-  // ***
-  // *** Print a blank line
-  // ***
+  //
+  // Print a blank line
+  //
   Serial.println();
 }
 
 void loop()
 {
-  // ***
-  // *** Read the sensor data
-  // ***
+  //
+  // Read the sensor data
+  //
   int chk = DHT.read11(DHT11_PIN);
 
-  // ***
-  // *** Increment the counter
-  // ***
+  //
+  // Increment the counter
+  //
   _counter++;
 
-  // ***
-  // *** Display the counter using
-  // *** a fixed width string.
-  // ***
+  //
+  // Display the counter using
+  // a fixed width string.
+  //
   char counterDisplay[7];
   sprintf(counterDisplay, "[%4d]", _counter);
   Serial.print(counterDisplay);
 
-  // ***
-  // *** Start the display
-  // ***
+  //
+  // Start the display
+  //
   Serial.print("[DHT11 ");
 
   switch (chk)
@@ -152,166 +152,166 @@ void loop()
       break;
   }
 
-  // ***
-  // *** Convert the reading to Fahrenheit
-  // ***
-  float farenheit = DHT.temperature * (9. / 5.) + 32.;
+  //
+  // Convert the reading to Fahrenheit
+  //
+  float fahrenheit = DHT.temperature * (9. / 5.) + 32.;
 
-  // ***
-  // *** Display the result
-  // ***
+  //
+  // Display the result
+  //
   Serial.print("Humidity = ");
   Serial.print(DHT.humidity, 0);
   Serial.print(" %, ");
   Serial.print("Temperature = ");
   Serial.print(DHT.temperature, 0);
   Serial.print(" C (");
-  Serial.print(farenheit);
+  Serial.print(fahrenheit);
   Serial.print(" F), ");
   Serial.print(" delay = ");
   Serial.print(_loopDelay);
   Serial.println(" ms");
 
-  // ***
-  // *** Check if the reading samples are taken too fast
-  // *** or too slow and adjust.
-  // ***
+  //
+  // Check if the reading samples are taken too fast
+  // or too slow and adjust.
+  //
   if (IsTooFast())
   {
-    // ***
-    // *** To fast;  increase the delay to slow down.
-    // ***
+    //
+    // To fast;  increase the delay to slow down.
+    //
     IncreaseLoopDelay();
   }
   else if (IsTooSlow())
   {
-    // ***
-    // *** To slow;  decrease the delay to speed up.
-    // ***
+    //
+    // To slow;  decrease the delay to speed up.
+    //
     DecreaseLoopDelay();
   }
 
-  // ***
-  // *** Reset if we start getting a lot of
-  // *** consecutive errors. This allows the
-  // *** application to "tune" the delay again.
-  // ***
+  //
+  // Reset if we start getting a lot of
+  // consecutive errors. This allows the
+  // application to "tune" the delay again.
+  //
   ResetWhen(_consecutiveErrors > READING_SAMPLES);
 
-  // ***
-  // *** Delay before taking another reading
-  // ***
+  //
+  // Delay before taking another reading
+  //
   delay(_loopDelay);
 }
 
-// ***
-// *** Called when the reading was successful
-// ***
+//
+// Called when the reading was successful
+//
 void OnSuccess()
 {
-  // ***
-  // *** Increment the _consecutiveReadings counter
-  // ***
+  //
+  // Increment the _consecutiveReadings counter
+  //
   _consecutiveReadings++;
 
-  // ***
-  // *** Reset the _consecutiveErrors counter
-  // ***
+  //
+  // Reset the _consecutiveErrors counter
+  //
   _consecutiveErrors = 0;
 }
 
-// ***
-// *** Called when the reading failed
-// ***
+//
+// Called when the reading failed
+//
 void OnFail()
 {
-  // ***
-  // *** Increment the _consecutiveErrors counter
-  // ***
+  //
+  // Increment the _consecutiveErrors counter
+  //
   _consecutiveErrors++;
 
-  // ***
-  // *** Reset the _consecutiveReadings counter
-  // ***
+  //
+  // Reset the _consecutiveReadings counter
+  //
   _consecutiveReadings = 0;
 }
 
-// ***
-// *** Increase the loop delay value
-// *** to slow the readings down (take
-// *** them less often).
-// ***
+//
+// Increase the loop delay value
+// to slow the readings down (take
+// them less often).
+//
 void IncreaseLoopDelay()
 {
-  // ***
-  // *** Never increased beyond the maximum value.
-  // ***
+  //
+  // Never increased beyond the maximum value.
+  //
   if (_loopDelay < MAXIMUM_LOOP_DELAY)
   {
-    // ***
-    // *** Increase the loop delay by 1 ms.
-    // ***
+    //
+    // Increase the loop delay by 1 ms.
+    //
     _loopDelay += LOOP_DELAY_INCREASE;
 
-    // ***
-    // *** Reset the counter since this is a new speed. This
-    // *** cal is the result of errors so do not reset the
-    // *** error count.
-    // ***
+    //
+    // Reset the counter since this is a new speed. This
+    // cal is the result of errors so do not reset the
+    // error count.
+    //
     _consecutiveReadings = 0;
 
-    // ***
-    // *** Calling IncreaseLoopDelay() means we
-    // *** found the lowest delay.
-    // ***
+    //
+    // Calling IncreaseLoopDelay() means we
+    // found the lowest delay.
+    //
     _foundLowestDelay = true;
   }
 }
 
-// ***
-// *** Decrease the loop delay to take
-// *** readings faster (take them more
-// *** often).
-// ***
+//
+// Decrease the loop delay to take
+// readings faster (take them more
+// often).
+//
 void DecreaseLoopDelay()
 {
-  // ***
-  // *** Never let loop delay get below 0.
-  // ***
+  //
+  // Never let loop delay get below 0.
+  //
   if (_loopDelay > MINIMUM_LOOP_DELAY)
   {
-    // ***
-    // *** Reduce the loop delay.
-    // ***
+    //
+    // Reduce the loop delay.
+    //
     _loopDelay -= (int)(_loopDelay * LOOP_DELAY_DECREASE);
 
-    // ***
-    // *** Loop delay must be MINIMUM_LOOP_DELAY or greater.
-    // ***
+    //
+    // Loop delay must be MINIMUM_LOOP_DELAY or greater.
+    //
     if (_loopDelay < MINIMUM_LOOP_DELAY) _loopDelay = MINIMUM_LOOP_DELAY;
 
-    // ***
-    // *** Reset the counters since this is a new speed. This
-    // *** call is not the result of errors so the error count
-    // *** is reset too.
-    // ***
+    //
+    // Reset the counters since this is a new speed. This
+    // call is not the result of errors so the error count
+    // is reset too.
+    //
     _consecutiveReadings = 0;
     _consecutiveErrors = 0;
   }
 }
 
-// ***
-// *** Determines if the readings are taken too fast
-// *** (or too often).
-// ***
+//
+// Determines if the readings are taken too fast
+// (or too often).
+//
 bool IsTooFast()
 {
   bool returnValue = false;
 
-  // ***
-  // *** We are too fast if there is at least
-  // *** one error.
-  // ***
+  //
+  // We are too fast if there is at least
+  // one error.
+  //
   if (_consecutiveErrors > 0
       && _loopDelay < MAXIMUM_LOOP_DELAY)
   {
@@ -321,18 +321,18 @@ bool IsTooFast()
   return returnValue;
 }
 
-// ***
-// *** Determines if the readings are taken too slow.
-// ***
+//
+// Determines if the readings are taken too slow.
+//
 bool IsTooSlow()
 {
   bool returnValue = false;
 
-  // ***
-  // *** Too slow if we have not yet found the
-  // *** lowest delay and we have had enough
-  // *** consecutive readings.
-  // ***
+  //
+  // Too slow if we have not yet found the
+  // lowest delay and we have had enough
+  // consecutive readings.
+  //
   if (!_foundLowestDelay
       && _consecutiveReadings >= READING_SAMPLES)
   {
@@ -342,19 +342,19 @@ bool IsTooSlow()
   return returnValue;
 }
 
-// ***
-// *** Resets the application when the given
-// *** condition is true.
-// ***
+//
+// Resets the application when the given
+// condition is true.
+//
 void ResetWhen(bool condition)
 {
   if (condition)
   {
-    // ***
-    // *** These values are set back to the
-    // *** original values when the application
-    // *** started.
-    // ***
+    //
+    // These values are set back to the
+    // original values when the application
+    // started.
+    //
     _loopDelay = MAXIMUM_LOOP_DELAY;
     _consecutiveReadings = 0;
     _consecutiveErrors = 0;

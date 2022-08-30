@@ -1,4 +1,4 @@
-// Copyright © 2015 Daniel Porrey
+// Copyright © 2015-2022 Daniel Porrey
 //
 // This file is part of the DHT11 Temperature Sensor project
 // on hackster.io (based on the code posted by Posted by Rahul Kar
@@ -37,35 +37,35 @@ int dht11_read_val()
 	uint8_t j = 0, i = 0;
 	float farenheit = 0;
 	
-	// ***
-	// *** Initialize the values
-	// ***
+	//
+	// Initialize the values
+	//
 	for (i = 0; i < 5; i++)
 	{
 		dht11_val[i] = 0;
 	}
 
-	// ***
-	// *** Signal the sensor to send data
-	// ***
+	//
+	// Signal the sensor to send data
+	//
 	pinMode(DHT11PIN, OUTPUT);
 	digitalWrite(DHT11PIN, LOW);
 
-	// ***
-	// *** Datasheet states that we should wait 18ms
-	// ***
+	//
+	// Data-sheet states that we should wait 18ms
+	//
 	delay(18);
 
-	// ***
-	// *** Set the pin to high and switch to input mode
-	// ***
+	//
+	// Set the pin to high and switch to input mode
+	//
 	digitalWrite(DHT11PIN, HIGH);
 	delayMicroseconds(40);
 	pinMode(DHT11PIN, INPUT);
 
-	// ***
-	// *** Get the bits
-	// ***
+	//
+	// Get the bits
+	//
 	for (i = 0; i < MAX_TIME; i++)
 	{
 		counter = 0;
@@ -87,9 +87,9 @@ int dht11_read_val()
 			break;
 		}
 
-		// ***
-		// *** Top 3 transitions are ignored
-		// ***
+		//
+		// Top 3 transitions are ignored
+		//
 		if ((i >= 4) && (i % 2 == 0))
 		{
 			dht11_val[j / 8] <<= 1;
@@ -103,9 +103,9 @@ int dht11_read_val()
 		}
 	}
 
-	// ***
-	// *** Verify checksum and print the verified data
-	// ***
+	//
+	// Verify checksum and print the verified data
+	//
 	if ((j >= 40) && (dht11_val[4] == ((dht11_val[0] + dht11_val[1] + dht11_val[2] + dht11_val[3]) & 0xFF)))
 	{
 		farenheit = dht11_val[2] * 9. / 5. + 32;
@@ -133,9 +133,9 @@ int main(int argc, char *argv[])
 	{
 		printf("Interfacing Temperature and Humidity Sensor (DHT11) With Raspberry Pi\n");
 
-		// ***
-		// *** Ensure we have wiringPi
-		// ***
+		//
+		// Ensure we have wiringPi
+		//
 		if (wiringPiSetup() == -1)
 		{
 			exit(1);
@@ -145,19 +145,19 @@ int main(int argc, char *argv[])
 		int delayTime = atoi(argv[1]);
 		int sampleCount = atoi(argv[2]);
 		
-		// ***
-		// *** Make sure delayTime is 0 or greater
-		// *** (Default is 500)
-		// ***
+		//
+		// Make sure delayTime is 0 or greater
+		// (Default is 500)
+		//
 		if (delayTime < 0)
 		{
 			delayTime = 500;			
 		}
 		
-		// ***
-		// *** Make sure sampleCount is greater 
-		// *** than 0 (default is 10)
-		// ***
+		//
+		// Make sure sampleCount is greater 
+		// than 0 (default is 10)
+		//
 		if (sampleCount < 1)
 		{
 			sampleCount = 10;
@@ -167,9 +167,9 @@ int main(int argc, char *argv[])
 
 		for(int i = 0; i < sampleCount; ++i)
 		{
-			// ***
-			// *** Read the sensor
-			// ***
+			//
+			// Read the sensor
+			//
 			int result = dht11_read_val();
 
 			if (result == 1)
@@ -177,9 +177,9 @@ int main(int argc, char *argv[])
 				successCount++;
 			}
 
-			// ***
-			// *** Delay between readings
-			// ***
+			//
+			// Delay between readings
+			//
 			delay(delayTime);
 		}
 		
